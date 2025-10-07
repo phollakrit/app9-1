@@ -34,7 +34,50 @@ app.get('/api/db/read', (request, response) => {
     })
 })
 
+app.post('/api/db/update', (request, response) => {
+    let form = request.body
+    let data = {
+        name: form.name || '', 
+        price: form.price || 0, 
+        detail: form.detail || '',
+        date_added: new Date(Date.parse(form.date_added)) || new Date()
+    }
 
+	Product
+	.findByIdAndUpdate(form._id, data, { useFindAndModify: false })
+	.exec(err => {
+        if (err) {
+            response.json({error: err})
+            return
+        }
+    })	
+    	
+    //หลังการอัปเดต ก็อ่านข้อมูลอีกครั้ง แล้วส่งไปแสดงผลที่ฝั่งโลคอลแทนข้อมูลเดิม
+    Product
+    .find()     
+    .exec((err, docs) => {
+        response.json(docs)
+    })
+})
+
+app.post('/api/db/delete', (request, response) => {
+    let _id = request.body._id
+
+	Product
+	.findByIdAndDelete(_id, { useFindAndModify: false })
+	.exec(err => {
+        if (err) {
+            response.json({error: err})
+            return
+        }
+    })		
+
+    Product
+    .find()     
+    .exec((err, docs) => {
+        response.json(docs)
+    })
+})
 
 app.get('/api/db/paginate', (request, response) => {
 	let options = {
